@@ -1,4 +1,4 @@
-package com.example.waittimes.activities;
+package com.waittimes.activities;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -7,9 +7,9 @@ import java.util.concurrent.ExecutionException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.example.waittimes.R;
-import com.example.waittimes.ui.JSONWaitLanesSearchAdapter;
-import com.example.waittimes.utilities.json.JSONGetTask;
+import com.waittimes.R;
+import com.waittimes.ui.JSONWaitLanesSearchAdapter;
+import com.waittimes.utilities.json.JSONGetTask;
 
 import android.app.Activity;
 import android.os.Bundle;

@@ -1,4 +1,4 @@
-package com.example.waittimes.utilities.json;
+package com.waittimes.utilities.json;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -14,7 +14,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.example.waittimes.LocationTest;
+import com.waittimes.LocationTest;
 
 import android.os.AsyncTask;
 import android.util.Log;

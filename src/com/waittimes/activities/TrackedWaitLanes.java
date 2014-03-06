@@ -1,4 +1,4 @@
-package com.example.waittimes.activities;
+package com.waittimes.activities;
 
 import android.app.Activity;
 

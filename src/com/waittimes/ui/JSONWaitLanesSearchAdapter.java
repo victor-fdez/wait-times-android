@@ -1,10 +1,10 @@
-package com.example.waittimes.ui;
+package com.waittimes.ui;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.example.waittimes.R;
+import com.waittimes.R;
 
 import android.app.Activity;
 import android.content.Context;

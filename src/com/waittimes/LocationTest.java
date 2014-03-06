@@ -1,5 +1,6 @@
-package com.example.waittimes;
+package com.waittimes;
 
+import com.waittimes.R;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient.ConnectionCallbacks;
 import com.google.android.gms.common.GooglePlayServicesClient.OnConnectionFailedListener;
@@ -32,7 +33,7 @@ public class LocationTest
 	
 	//CLASS VARIABLES
 	//class tag
-	public static final String tag = "com.example.waittimes";
+	public static final String tag = "com.waittimes";
 	//updates boolean string
 	public static final String key_updates = "KEY_UPDATES_ON";
 	// Milliseconds per second
