@@ -53,6 +53,7 @@ public class LocationTest
     LocationRequest mLocationRequest;
     LocationClient mLocationClient;
     boolean mUpdatesRequested;
+	@SuppressWarnings("unused")
 	private Editor mEditor;
 	private SharedPreferences mPrefs;
 	private WebView mWebView;
@@ -70,7 +71,7 @@ public class LocationTest
         mWebView.getSettings().setAllowFileAccessFromFileURLs(true);
         //Log.d(LocationTest.tag, ""+myWebView.getSettings().getJavaScriptEnabled());
         //Load web page on WebView
-        mWebView.loadUrl("http://www.cerberu.com/~chingaman/android/wait-times-server/static/templates/current_location.html");
+        mWebView.loadUrl("http://www.cerberu.com:8001/static/templates/current_location.html");
         
         //Setup location updates, and location client
         this.mLocationRequest = LocationRequest.create();
