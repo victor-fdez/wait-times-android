@@ -15,29 +15,39 @@
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <ImageView
-        android:id="@+id/destinationCountryImageView"
+        android:id="@+id/originCountryImageView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_alignTop="@+id/waitLaneNameTextView"
-        android:contentDescription="@string/destinationImageViewDescription"
+        android:layout_alignLeft="@+id/waitLaneNameTextView"
+        android:layout_below="@+id/waitLaneNameTextView"
+        android:layout_marginTop="10dp"
+        android:contentDescription="@string/originImageViewDescription"
         android:src="@drawable/common_signin_btn_icon_disabled_dark" />
 
     <ImageView
         android:id="@+id/arrowImageView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignTop="@+id/destinationCountryImageView"
-        android:layout_toLeftOf="@+id/destinationCountryImageView"
-        android:src="@drawable/common_signin_btn_icon_disabled_focus_dark" />
+        android:layout_alignTop="@+id/originCountryImageView"
+        android:layout_toRightOf="@+id/originCountryImageView"
+        android:src="@drawable/ic_action_forward" />
 
     <ImageView
-        android:id="@+id/originCountryImageView"
+        android:id="@+id/destinationCountryImageView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignTop="@+id/arrowImageView"
-        android:layout_toLeftOf="@+id/arrowImageView"
-        android:contentDescription="@string/originImageViewDescription"
+        android:layout_toRightOf="@+id/arrowImageView"
+        android:contentDescription="@string/destinationImageViewDescription"
         android:src="@drawable/common_signin_btn_icon_disabled_dark" />
+
+    <Button
+        android:id="@+id/addButton"
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignTop="@+id/waitLaneNameTextView"
+        android:text="+" />
 
 </RelativeLayout>

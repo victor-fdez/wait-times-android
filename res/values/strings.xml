@@ -6,5 +6,6 @@
     <string name="hello_world">Hello world!</string>
     <string name="originImageViewDescription">origin country</string>
     <string name="destinationImageViewDescription">destination country</string>
+    <string name="domain">72.191.185.122</string>
 
 </resources>
