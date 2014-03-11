@@ -29,15 +29,10 @@ public class SearchWaitLanes extends Activity {
 		actionBar.setTitle(SearchWaitLanes.ACTIVITY_TITLE);
 		JSONGetTask task = new JSONGetTask();
 		try {
-			task.execute(new URI("http://"+this.getString(R.string.domain)+"/WaitLanes/file/all/list.json"));
-			JSONObject jsonObj = task.get();
+			JSONObject jsonObj = task.getItNow(new URI("http://"+this.getString(R.string.domain)+"/WaitLanes/file/all/list.json"));	
 			JSONWaitLanesSearchAdapter adapter = new JSONWaitLanesSearchAdapter(this, jsonObj);
 			this.list.setAdapter(adapter);
 		} catch (URISyntaxException e) {
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		} catch (ExecutionException e) {
 			e.printStackTrace();
 		} catch (JSONException e) {
 			e.printStackTrace();

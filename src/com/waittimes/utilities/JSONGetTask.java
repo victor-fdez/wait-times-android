@@ -11,7 +11,7 @@ import android.util.Log;
 
 public class JSONGetTask extends HTTPEntityAsyncTask {
 	public static String tag = JSONGetTask.class.getName();
-	protected JSONObject getItNow(URI... uris){
+	public JSONObject getItNow(URI... uris){
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		JSONObject json = null;
 		try {

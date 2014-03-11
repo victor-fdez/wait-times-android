@@ -12,7 +12,7 @@ import android.graphics.BitmapFactory;
 
 public class BitmapGetTask extends HTTPEntityAsyncTask {
 	
-	protected Bitmap getItNow(URI uri){
+	public Bitmap getItNow(URI uri){
 		Bitmap map = null;
 		this.execute(uri);
 		try {
