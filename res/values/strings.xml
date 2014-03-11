@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <string name="app_name">Wait Times</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
     <string name="originImageViewDescription">origin country</string>
     <string name="destinationImageViewDescription">destination country</string>
-    <string name="domain">72.191.185.122</string>
-
+    <string name="domain">192.168.254.54:8000</string>
 </resources>
