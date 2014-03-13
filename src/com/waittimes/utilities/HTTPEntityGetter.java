@@ -12,13 +12,11 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 
-import android.os.AsyncTask;
 import android.util.Log;
 
-public class HTTPEntityAsyncTask extends AsyncTask<URI, Integer, HttpEntity>{
-	public static String tag = HTTPEntityAsyncTask.class.getName();
-	@Override
-	protected HttpEntity doInBackground(URI... uris) {
+public class HTTPEntityGetter {
+	
+	public HttpEntity getItNow(URI...uris){
 		//assume there is only one url for now
 		//setup GET request to get document
 		HttpClient client = new DefaultHttpClient();
@@ -29,7 +27,8 @@ public class HTTPEntityAsyncTask extends AsyncTask<URI, Integer, HttpEntity>{
 			HttpResponse response = client.execute(request);
 			StatusLine status = response.getStatusLine();
 			if(status.getStatusCode() == HttpStatus.SC_OK){
-				Log.d(HTTPEntityAsyncTask.tag, "succesfully downloaded http object="+uri);
+				Log.d(HTTPEntityGetter.class.getName(), "succesfully downloaded http object="+uri);
+				//TODO: goes lony here!
 				return response.getEntity();
 			}
 			else{
@@ -43,5 +42,4 @@ public class HTTPEntityAsyncTask extends AsyncTask<URI, Integer, HttpEntity>{
 		}
 		return null;
 	}
-
 }

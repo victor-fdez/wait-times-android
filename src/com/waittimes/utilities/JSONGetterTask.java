@@ -3,31 +3,32 @@ package com.waittimes.utilities;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
-import java.util.concurrent.ExecutionException;
+
+import org.apache.http.HttpEntity;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.os.AsyncTask;
 import android.util.Log;
 
-public class JSONGetTask extends HTTPEntityAsyncTask {
-	public static String tag = JSONGetTask.class.getName();
-	public JSONObject getItNow(URI... uris){
+public class JSONGetterTask extends AsyncTask<URI, Integer, JSONObject>{
+	public static String tag = JSONGetterTask.class.getName();
+	
+	@Override
+	protected JSONObject doInBackground(URI... uris) {
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		JSONObject json = null;
 		try {
-			this.get().writeTo(outputStream);
+			HttpEntity entity = new HTTPEntityGetter().getItNow(uris);
+			entity.writeTo(outputStream);
 			outputStream.close();
 			json = new JSONObject(outputStream.toString());
 		} catch (IOException e) {
 			e.printStackTrace();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		} catch (ExecutionException e) {
-			e.printStackTrace();
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
-		Log.d(JSONGetTask.tag, "succesfully parsed json object");
+		Log.d(JSONGetterTask.tag, "succesfully parsed json object");
 		return json;
 	}
 }

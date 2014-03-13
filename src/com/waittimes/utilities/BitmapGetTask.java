@@ -2,27 +2,22 @@ package com.waittimes.utilities;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.concurrent.ExecutionException;
 
-import org.apache.http.HttpEntity;
 import org.apache.http.util.EntityUtils;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 
-public class BitmapGetTask extends HTTPEntityAsyncTask {
+public class BitmapGetTask extends AsyncTask<URI, Integer, Bitmap> {
 	
-	public Bitmap getItNow(URI uri){
+	@Override
+	protected Bitmap doInBackground(URI... uris) {
 		Bitmap map = null;
-		this.execute(uri);
 		try {
-			byte[] bytes = EntityUtils.toByteArray(this.get());
+			byte[] bytes = EntityUtils.toByteArray(new HTTPEntityGetter().getItNow(uris));
 			map = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
 		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		} catch (ExecutionException e) {
 			e.printStackTrace();
 		}
 		return map;

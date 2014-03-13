@@ -7,17 +7,18 @@ import java.util.concurrent.ExecutionException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.j256.ormlite.android.apptools.OrmLiteBaseActivity;
 import com.waittimes.R;
+import com.waittimes.storage.DatabaseHelper;
 import com.waittimes.ui.JSONWaitLanesSearchAdapter;
 import com.waittimes.utilities.*;
 
 import android.app.ActionBar;
-import android.app.Activity;
 import android.os.Bundle;
 import android.widget.ListView;
 
 
-public class SearchWaitLanes extends Activity {
+public class SearchWaitLanes extends OrmLiteBaseActivity<DatabaseHelper> {
 	public final static String tag = SearchWaitLanes.class.getName();
 	public final static String ACTIVITY_TITLE = "Add Wait Lanes";
 	private ListView list;
@@ -27,14 +28,21 @@ public class SearchWaitLanes extends Activity {
 		this.list = (ListView)this.findViewById(R.id.searchListView);
 		ActionBar actionBar = this.getActionBar();
 		actionBar.setTitle(SearchWaitLanes.ACTIVITY_TITLE);
-		JSONGetTask task = new JSONGetTask();
+		JSONGetterTask task = new JSONGetterTask();
 		try {
-			JSONObject jsonObj = task.getItNow(new URI("http://"+this.getString(R.string.domain)+"/WaitLanes/file/all/list.json"));	
+			task.execute(new URI("http://"+this.getString(R.string.domain)+"/WaitLanes/file/all/list.json"));
+			JSONObject jsonObj = task.get();	
 			JSONWaitLanesSearchAdapter adapter = new JSONWaitLanesSearchAdapter(this, jsonObj);
 			this.list.setAdapter(adapter);
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
 		} catch (JSONException e) {
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
