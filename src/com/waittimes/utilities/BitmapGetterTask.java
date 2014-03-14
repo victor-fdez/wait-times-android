@@ -9,7 +9,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 
-public class BitmapGetTask extends AsyncTask<URI, Integer, Bitmap> {
+public class BitmapGetterTask extends AsyncTask<URI, Integer, Bitmap> {
 	
 	@Override
 	protected Bitmap doInBackground(URI... uris) {
