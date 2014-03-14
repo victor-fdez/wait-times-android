@@ -11,12 +11,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.j256.ormlite.android.apptools.OrmLiteBaseActivity;
+import com.j256.ormlite.dao.RuntimeExceptionDao;
 import com.waittimes.R;
 import com.waittimes.storage.DatabaseHelper;
 import com.waittimes.storage.WaitLane;
 import com.waittimes.utilities.BitmapGetterTask;
 
-import android.app.Activity;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -32,8 +32,10 @@ public class JSONWaitLanesSearchAdapter extends BaseAdapter {
 	private JSONArray waitLanes;
 	private LayoutInflater inflater;
 	private String domain = null;
-	public JSONWaitLanesSearchAdapter(Activity activity, JSONObject jsonObj) throws JSONException{
+	private OrmLiteBaseActivity<DatabaseHelper> activity;
+	public JSONWaitLanesSearchAdapter(OrmLiteBaseActivity<DatabaseHelper> activity, JSONObject jsonObj) throws JSONException{
 		this.waitLanes = jsonObj.getJSONArray("waitLanes");
+		this.activity = activity;
 		this.inflater = (LayoutInflater)activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		this.domain = activity.getString(R.string.domain);
 	}
@@ -89,6 +91,13 @@ public class JSONWaitLanesSearchAdapter extends BaseAdapter {
 				bitmapGetter.execute(flagURI);
 				entry.getValue().setImageBitmap(bitmapGetter.get());
 			}
+			//check if the wait lane already has been stored and if so
+			//update accordingly the buttons text
+			if(!WaitLane.exists(waitLane)){
+				addButton.setText("+");
+			}else{
+				addButton.setText("-");
+			}
 			//set on click listener and add json object for wait lane as
 			//a tag for the button.
 			addButton.setTag(waitLane);
@@ -98,12 +107,24 @@ public class JSONWaitLanesSearchAdapter extends BaseAdapter {
 				public void onClick(View v) {
 					JSONObject waitLaneJSON = (JSONObject)v.getTag();
 					OrmLiteBaseActivity<DatabaseHelper> activity = (OrmLiteBaseActivity<DatabaseHelper>)v.getContext();
-					WaitLane waitLane;
-					try {
-						waitLane = new WaitLane(waitLaneJSON);
-						waitLane.store(activity);
-					} catch (JSONException e) {
-						e.printStackTrace();
+					Button button = (Button)v;
+					if(button.getText().toString().equals("+")){ //store
+						try {
+							WaitLane waitLane = new WaitLane(waitLaneJSON);
+							waitLane.store();
+							button.setText("-");
+						} catch (JSONException e) {
+							e.printStackTrace();
+						}
+					}else{ //remove everything
+						RuntimeExceptionDao<WaitLane, String> dao = activity.getHelper().getWaitLaneDataDAO();
+						try {
+							WaitLane waitLane = dao.queryForId(waitLaneJSON.getString("id"));
+							waitLane.remove();
+							button.setText("+");
+						} catch (JSONException e) {
+							e.printStackTrace();
+						}
 					}
 				}	
 			});

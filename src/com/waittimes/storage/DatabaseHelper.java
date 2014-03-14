@@ -15,7 +15,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 
 	private static final String DATABASE_NAME = "WaitTimes.db";
 	private static final int DATABASE_VERSION = 1;
-	private RuntimeExceptionDao<WaitLane, Integer> waitLaneRuntimeDAO = null;
+	private RuntimeExceptionDao<WaitLane, String> waitLaneRuntimeDAO = null;
 
 	public DatabaseHelper(Context context){
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -48,7 +48,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 
 	}
 
-	public RuntimeExceptionDao<WaitLane, Integer> getWaitLaneDataDAO() {
+	public RuntimeExceptionDao<WaitLane, String> getWaitLaneDataDAO() {
 		if (waitLaneRuntimeDAO == null) {
 			waitLaneRuntimeDAO = getRuntimeExceptionDao(WaitLane.class);
 		}
