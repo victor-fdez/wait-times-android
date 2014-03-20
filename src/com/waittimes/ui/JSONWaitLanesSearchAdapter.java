@@ -32,10 +32,8 @@ public class JSONWaitLanesSearchAdapter extends BaseAdapter {
 	private JSONArray waitLanes;
 	private LayoutInflater inflater;
 	private String domain = null;
-	private OrmLiteBaseActivity<DatabaseHelper> activity;
 	public JSONWaitLanesSearchAdapter(OrmLiteBaseActivity<DatabaseHelper> activity, JSONObject jsonObj) throws JSONException{
 		this.waitLanes = jsonObj.getJSONArray("waitLanes");
-		this.activity = activity;
 		this.inflater = (LayoutInflater)activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		this.domain = activity.getString(R.string.domain);
 	}

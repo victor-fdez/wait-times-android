@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/trackedWaitLaneRow"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <TextView
+        android:id="@+id/waitLaneNameTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="15dp"
+        android:layout_marginTop="10dp"
+        android:text="Medium Text"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <ImageView
+        android:id="@+id/arrowImageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/originCountryImageView"
+        android:layout_toRightOf="@+id/originCountryImageView"
+        android:src="@drawable/ic_action_forward" />
+
+    <ImageView
+        android:id="@+id/destinationCountryImageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/arrowImageView"
+        android:layout_toRightOf="@+id/arrowImageView"
+        android:contentDescription="@string/destinationImageViewDescription"
+        android:src="@drawable/common_signin_btn_icon_disabled_dark" />
+
+    <TextView
+        android:id="@+id/waitTimeTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/originCountryImageView"
+        android:layout_below="@+id/waitLaneNameTextView"
+        android:text="Small Text"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+    <TextView
+        android:id="@+id/waitTimeInterpretationTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/waitTimeTextView"
+        android:layout_below="@+id/waitTimeTextView"
+        android:text="Small Text"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+    <ImageView
+        android:id="@+id/originCountryImageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/waitLaneNameTextView"
+        android:layout_below="@+id/waitTimeInterpretationTextView"
+        android:contentDescription="@string/originImageViewDescription"
+        android:src="@drawable/common_signin_btn_icon_disabled_dark" />
+
+</RelativeLayout>

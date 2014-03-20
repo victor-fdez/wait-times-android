@@ -31,6 +31,9 @@ public class SearchWaitLanes extends OrmLiteBaseActivity<DatabaseHelper> {
 		ActionBar actionBar = this.getActionBar();
 		actionBar.setHomeButtonEnabled(true);
 		actionBar.setTitle(SearchWaitLanes.ACTIVITY_TITLE);
+		//TODO: put all of this inside wait lane class
+		//so that wait lane class will contain all knowledge
+		//of waitlanes and keep this classes from getting drity
 		JSONGetterTask task = new JSONGetterTask();
 		try {
 			task.execute(new URI("http://"+this.getString(R.string.domain)+"/WaitLanes/file/all/list.json"));
@@ -42,10 +45,8 @@ public class SearchWaitLanes extends OrmLiteBaseActivity<DatabaseHelper> {
 		} catch (JSONException e) {
 			e.printStackTrace();
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (ExecutionException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -56,7 +57,6 @@ public class SearchWaitLanes extends OrmLiteBaseActivity<DatabaseHelper> {
 	 */
 	@Override
 	protected void onStop() {
-		WaitLane.setActivity(null);
 		super.onStop();
 	}
 

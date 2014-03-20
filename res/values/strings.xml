@@ -6,4 +6,5 @@
     <string name="originImageViewDescription">origin country</string>
     <string name="destinationImageViewDescription">destination country</string>
     <string name="domain">10.0.2.2:8000</string>
+    <string name="search_wait_lanes_title">Search Wait Lanes</string>
 </resources>
