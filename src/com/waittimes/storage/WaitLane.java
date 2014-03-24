@@ -363,7 +363,18 @@ public class WaitLane {
 	/**
 	 * STATIC METHODS
 	 */
-	
+	/**
+	 * get the wait lane with the specified id, it can only
+	 * get a wait lane that is local
+	 * 
+	 * @param id
+	 * @return
+	 */
+	public static WaitLane getWaitLaneWithID(String id){
+		RuntimeExceptionDao<WaitLane, String> dao = WaitLane.activity.getHelper().getWaitLaneDataDAO();
+		WaitLane waitLane = dao.queryForId(id);
+		return waitLane;
+	}
 	/**
 	 * Check weather the waitlane with the given id exists.
 	 * 

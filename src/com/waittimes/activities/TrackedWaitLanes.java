@@ -40,6 +40,7 @@ public class TrackedWaitLanes extends OrmLiteBaseActivity<DatabaseHelper> {
 		ListView trackedList = (ListView)this.findViewById(R.id.trackedListView);
 		WaitLanesTrackedListAdapter waitLanesAdapter = new WaitLanesTrackedListAdapter(this);
 		trackedList.setAdapter(waitLanesAdapter);
+		trackedList.setOnItemClickListener(waitLanesAdapter);
 		super.onStart();
 	}
 

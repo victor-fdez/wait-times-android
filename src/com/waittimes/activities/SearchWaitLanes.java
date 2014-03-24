@@ -29,6 +29,7 @@ public class SearchWaitLanes extends OrmLiteBaseActivity<DatabaseHelper> {
 		this.list = (ListView)this.findViewById(R.id.searchListView);
 		WaitLane.setActivity(this);	
 		ActionBar actionBar = this.getActionBar();
+		actionBar.setDisplayHomeAsUpEnabled(true);
 		actionBar.setHomeButtonEnabled(true);
 		actionBar.setTitle(SearchWaitLanes.ACTIVITY_TITLE);
 		//TODO: put all of this inside wait lane class

@@ -4,18 +4,24 @@ import java.util.List;
 
 import com.j256.ormlite.android.apptools.OrmLiteBaseActivity;
 import com.waittimes.R;
+import com.waittimes.activities.DetailWaitLanes;
 import com.waittimes.storage.DatabaseHelper;
 import com.waittimes.storage.WaitLane;
 
 import android.content.Context;
+import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-public class WaitLanesTrackedListAdapter extends BaseAdapter {
+public class WaitLanesTrackedListAdapter extends BaseAdapter implements OnItemClickListener {
 	
 	private List<WaitLane> waitLanes;
 	private LayoutInflater inflater;
@@ -61,9 +67,21 @@ public class WaitLanesTrackedListAdapter extends BaseAdapter {
 		//set country images for waitlane
 		originImageView.setImageBitmap(waitLane.getBitmapProperty(WaitLane.ORIGIN_PICTURE_DIR));
 		destinationImageView.setImageBitmap(waitLane.getBitmapProperty(WaitLane.DESTIN_PICTURE_DIR));
-		
-		
+	
+		//setup view tag
+		view.setTag(waitLane);
 		return view;
 	}
+
+	@Override
+	public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+		Log.d(WaitLanesTrackedListAdapter.class.getCanonicalName(),"clicked another row");
+		Intent intent = new Intent(WaitLane.getActivity(), DetailWaitLanes.class);
+		WaitLane waitLane = (WaitLane)view.getTag();
+		intent.putExtra("id", waitLane.getId());
+		WaitLane.getActivity().startActivity(intent);
+		
+	}
+	
 
 }
