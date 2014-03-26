@@ -1,0 +1,28 @@
+how should the algorithm work?
+
+idea 1
+	
+	1.) setup geofences for every tracked wait lane
+		a.) one geofence should be as close a possible to the size
+			of actual boundary region.
+		b.) another geofence should be a limit on how far tracking
+			will be allowed for that geofence.
+	2.) after the leaves the limit geofence give a minute or two for
+		gps to keep recording.
+		
+	#CHECK: atleast one point must have fallen within boundary polygon 
+	(optional)
+	
+	3.) for every geofence limit that was activiated throughout the
+		recording run the likeliness algorithm.
+		a.) for every point of the recorded path determine which is
+			the closest square. this will generate a sequence of squares
+			that are supposed to have been transversed.
+			1.) give a score to each gps point to square based on distance.
+		b.) use the scores to come up with a score for the whole bridge.
+	4.) order the bridges by score from lowest to highest, then for
+		each bridge try to determine a valid path.
+		(hard part)
+		a.) start with exits, based on the last points, find the point that
+		closest to an exit.
+		b.)
