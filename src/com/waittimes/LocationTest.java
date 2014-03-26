@@ -206,7 +206,6 @@ public class LocationTest
 	@Override
 	public void onConnected(Bundle bundle) {
 		// If already requested, start periodic updates
-    	Log.d(LocationTest.tag, "onConnected: ");
         if (mUpdatesRequested) {
         	Log.d(LocationTest.tag, "onConnected: resquested location updates");
             mLocationClient.requestLocationUpdates(mLocationRequest, this);

@@ -22,7 +22,6 @@ import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.TextView;
 
 
@@ -39,7 +38,16 @@ public class DetailWaitLanes
 	private LocationRequest locationRequest;
 	private LocationClient locationClient;
 	private boolean updatesRequest;
+	private boolean finishedLoading;
+	private JavascriptWebInterface javascriptInterface;
 	
+	/**
+	 * @param finishedLoading the finishedLoading to set
+	 */
+	public void setFinishedLoading(boolean finishedLoading) {
+		this.finishedLoading = finishedLoading;
+	}
+
 	@SuppressLint("SetJavaScriptEnabled")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +55,8 @@ public class DetailWaitLanes
 		super.onCreate(savedInstanceState);
 		WaitLane.setActivity(this);
 		
+		this.updatesRequest = true;
+		this.finishedLoading = false;
 		//get wait lane
 		String id = this.getIntent().getExtras().getString("id");
 		Log.d(DetailWaitLanes.class.getName(), "onCreate() showing activity detail of wait lane "+id);
@@ -68,19 +78,8 @@ public class DetailWaitLanes
         WebSettings webSettings = webView.getSettings();
         webSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);
         
-        webView.setWebViewClient(new WebViewClient(){
-
-			/* (non-Javadoc)
-			 * @see android.webkit.WebViewClient#onPageFinished(android.webkit.WebView, java.lang.String)
-			 */
-			@Override
-			public void onPageFinished(WebView view, String url) {
-				super.onPageFinished(view, url);
-				Log.d(DetailWaitLanes.class.getName(), "finished loading page");
-			}
-        	
-        });
-        webView.addJavascriptInterface(new JavascriptWebInterface(this), "Android");
+        this.javascriptInterface = new JavascriptWebInterface(this);
+        webView.addJavascriptInterface(this.javascriptInterface, "Android");
         webView.loadUrl("http://"+this.getString(R.string.domain)+"/WaitLanes/app/"+id+"/geojson");
         
         this.locationRequest = LocationRequest.create();
@@ -88,7 +87,7 @@ public class DetailWaitLanes
         this.locationRequest.setInterval(3000);
         this.locationRequest.setFastestInterval(1000);
         this.locationClient = new LocationClient(this, this, this);
-        this.updatesRequest = true;
+        
 	}
 
 	/* (non-Javadoc)
@@ -97,13 +96,21 @@ public class DetailWaitLanes
 	@Override
 	protected void onStart() {
 		super.onStart();
+		Log.d(LocationTest.tag, "onStart: connected to location updates");
 		this.locationClient.connect();
 	}
 
 	@Override
-	public void onLocationChanged(Location arg0) {
+	public void onLocationChanged(Location location) {
 		// TODO Auto-generated method stub
-		
+		if(this.finishedLoading){
+			double lat = location.getLatitude();
+			double lon = location.getLongitude();
+			//Log.d(DetailWaitLanes.class.getName(), "getting location at "+lon+","+
+			this.javascriptInterface.showMessage("getting location at "+lon+","+lat+".");
+			this.webView.loadUrl("javascript: updateLocation("+lon+","+
+																lat+");");
+		}
 	}
 
 	@Override
@@ -166,6 +173,7 @@ public class DetailWaitLanes
 			//start anything that is supposed to run when
 			//the page is loaded.
 			Log.d(DetailWaitLanes.class.getName(), "JavascriptWebInterface.finishedLoadingLayers()");
+			this.activity.setFinishedLoading(true);
 			//begin tracking gps location
 		}
 		
