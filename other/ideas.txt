@@ -23,6 +23,24 @@ idea 1
 	4.) order the bridges by score from lowest to highest, then for
 		each bridge try to determine a valid path.
 		(hard part)
-		a.) start with exits, based on the last points, find the point that
-		closest to an exit.
-		b.)
+		a.) calculate forwards and backward flow analysis for each block
+			of the bridge.
+		b.) start with the entries, calculate a total score for each
+			descendant of the entry, the entry with the lowest score, will
+			be chosen as the entry.
+		c.) set current block
+		d.) while finished
+			1.) if the current block has several immediate decendants, then 
+				for each immediate descendant
+				a.) calculate score for the descendants of the immediate descendant
+				b.) choose the immediate descendant with the lowest score
+			2.) if the current block has only one immediate descendant, then
+				a.) choose this as immediate descendant
+			3.) if no descendant then finished
+		e.) this will be the route taken with the smallest score
+	5.) choose the route taken with the smallest score for all bridges that
+		were used.
+	6.) if route has a score below certain threshould then choose this as the
+		route that was actually taken.
+	7.) calculate factores! :) (later)
+				
