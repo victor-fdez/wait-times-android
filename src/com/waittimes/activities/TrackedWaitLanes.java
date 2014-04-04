@@ -59,10 +59,16 @@ public class TrackedWaitLanes extends OrmLiteBaseActivity<DatabaseHelper> {
 	 */
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
+		Intent intent;
 		switch(item.getItemId()){
 			case R.id.search_wait_lanes:
 				Log.d(TrackedWaitLanes.class.getName(), "onOptionsItemSelected() selected search wait lanes");
-				Intent intent = new Intent(this, SearchWaitLanes.class);
+				intent = new Intent(this, SearchWaitLanes.class);
+				this.startActivity(intent);
+				return true;
+			case R.id.all_tracked_wait_lanes:
+				Log.d(TrackedWaitLanes.class.getName(), "onOptionsItemSelected() demo all wait lanes");
+				intent = new Intent(this, DetailAllWaitLanes.class);
 				this.startActivity(intent);
 				return true;
 			default:

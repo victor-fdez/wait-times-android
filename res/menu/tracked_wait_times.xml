@@ -5,6 +5,8 @@
         android:title="@string/search_wait_lanes_title" 
     	android:showAsAction="ifRoom">
     </item>
+    <item android:id="@+id/all_tracked_wait_lanes" 
+    	android:title="demo" android:showAsAction="collapseActionView"></item>
     
 
 </menu>

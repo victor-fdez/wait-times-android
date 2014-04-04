@@ -19,6 +19,7 @@ import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.location.Location;
 import android.os.Bundle;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
@@ -27,13 +28,13 @@ import android.webkit.WebView;
 import android.widget.TextView;
 
 
-public class DetailWaitLanes 
+public class DetailAllWaitLanes 
 	extends OrmLiteBaseActivity<DatabaseHelper> 
 	implements LocationListener,
 			   ConnectionCallbacks, 
 			   OnConnectionFailedListener{
 	
-	public final static String tag = DetailWaitLanes.class.getName();
+	public final static String tag = DetailAllWaitLanes.class.getName();
 	public final static String ACTIVITY_TITLE = "Wait Lane Information";
 	private WaitLane waitLane = null;
 	private WebView webView;
@@ -60,16 +61,15 @@ public class DetailWaitLanes
 		this.updatesRequest = true;
 		this.finishedLoading = false;
 		//get wait lane
-		String id = this.getIntent().getExtras().getString("id");
-		Log.d(DetailWaitLanes.class.getName(), "onCreate() showing activity detail of wait lane "+id);
-		this.waitLane = WaitLane.getWaitLaneWithID(id);
+		Log.d(DetailAllWaitLanes.class.getName(), "onCreate() showing activity detail of all wait lanes");
 		
 		//setup action bar
 		ActionBar actionBar = this.getActionBar();
 		actionBar.setHomeButtonEnabled(true);
-		actionBar.setTitle(this.waitLane.getName());
+		actionBar.setTitle("all wait lanes");
 		
 		//setup UI
+		((TextView)this.findViewById(R.id.web_view_debug_text_view)).setMovementMethod(new ScrollingMovementMethod());
 		webView = (WebView)this.findViewById(R.id.web_view);
 		webView.setWebChromeClient(new WebChromeClient());
         webView.getSettings().setJavaScriptEnabled(true);
@@ -98,7 +98,7 @@ public class DetailWaitLanes
 	@Override
 	protected void onStart() {
 		super.onStart();
-		Log.d(LocationTest.tag, "onStart: connected to location updates");
+		Log.d(DetailWaitLanes.tag, "onStart: connected to location updates");
 		this.locationClient.connect();
 	}
 
@@ -109,7 +109,7 @@ public class DetailWaitLanes
 			double lat = location.getLatitude();
 			double lon = location.getLongitude();
 			//Log.d(DetailWaitLanes.class.getName(), "getting location at "+lon+","+
-			//this.javascriptInterface.showMessage("getting location at "+lon+","+lat+".");
+			this.javascriptInterface.showMessage("getting location at "+lon+","+lat+".");
 			this.webView.loadUrl("javascript: updateLocation("+lon+","+
 																lat+");");
 		}
@@ -159,9 +159,9 @@ public class DetailWaitLanes
 
 	private class JavascriptWebInterface{
 		
-		private DetailWaitLanes activity = null;
+		private DetailAllWaitLanes activity = null;
 		
-		JavascriptWebInterface(DetailWaitLanes activity){
+		JavascriptWebInterface(DetailAllWaitLanes activity){
 			this.activity = activity;
 		}
 		
@@ -174,11 +174,14 @@ public class DetailWaitLanes
 		public void finishedLoadingLayers(String id){
 			//start anything that is supposed to run when
 			//the page is loaded.
-			Log.d(DetailWaitLanes.class.getName(), "JavascriptWebInterface.finishedLoadingLayers() "+id);
-			if(id.equals("map")){	
-				this.activity.webView.post(
-						new RunnableLoadURL(this.activity.webView, "javascript: loadWaitLane("+activity.waitLane.getId()+");")
-				);
+			Log.d(DetailAllWaitLanes.class.getName(), "JavascriptWebInterface.finishedLoadingLayers() "+id);
+			if(id.equals("map")){
+				List<WaitLane> waitLanes = WaitLane.getAllTrackedWaitLanes();
+				for(WaitLane waitLaneI : waitLanes){
+					this.activity.webView.post(
+							new RunnableLoadURL(this.activity.webView, "javascript: loadWaitLane("+waitLaneI.getId()+");")
+					);
+				}
 			}
 			this.activity.setFinishedLoading(true);
 			//begin tracking gps location
@@ -186,23 +189,18 @@ public class DetailWaitLanes
 		
 		@JavascriptInterface
 		public void appendMessage(String message){
-
-				TextView textView = (TextView) this.activity.findViewById(R.id.web_view_debug_text_view);
-				textView.post(
-						new RunnableChangeText(textView, message, false)
-				);
+			TextView textView = (TextView) this.activity.findViewById(R.id.web_view_debug_text_view);
+			textView.append(message);
 		}
 		
 		@JavascriptInterface
 		public void showMessage(String message){
-				
-				TextView textView = (TextView) this.activity.findViewById(R.id.web_view_debug_text_view);
-				textView.post(
-						new RunnableChangeText(textView, message, true)
-				);
+			TextView textView = (TextView) this.activity.findViewById(R.id.web_view_debug_text_view);
+			textView.setText(message);
 		}
 		
 	}
+	
 	private class RunnableLoadURL implements Runnable{
 		
 		private WebView webView;
@@ -217,24 +215,5 @@ public class DetailWaitLanes
 		public void run() {
 			this.webView.loadUrl(this.url);
 		}
-	}
-	private class RunnableChangeText implements Runnable{
-		private TextView view;
-		private String message;
-		private boolean setText;
-		RunnableChangeText(TextView view, String message, boolean setText){
-			this.view = view;
-			this.message = message;
-			this.setText = setText;
-		}
-		@Override
-		public void run() {
-			if(this.setText){
-				this.view.setText(this.message);
-			}else{
-				this.view.append(this.message);
-			}
-		}
-	
 	}
 }
