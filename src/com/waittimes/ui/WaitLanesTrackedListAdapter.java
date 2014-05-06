@@ -65,8 +65,8 @@ public class WaitLanesTrackedListAdapter extends BaseAdapter implements OnItemCl
 		waitLaneTimeInterpretationTextView.setText("no traffic");
 		
 		//set country images for waitlane
-		originImageView.setImageBitmap(waitLane.getBitmapProperty(WaitLane.ORIGIN_PICTURE_DIR));
-		destinationImageView.setImageBitmap(waitLane.getBitmapProperty(WaitLane.DESTIN_PICTURE_DIR));
+		originImageView.setImageBitmap(waitLane.getBitmapOriginFlag());
+		destinationImageView.setImageBitmap(waitLane.getBitmapDestinationFlag());
 	
 		//setup view tag
 		view.setTag(waitLane);

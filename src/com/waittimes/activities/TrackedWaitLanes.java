@@ -1,5 +1,7 @@
 package com.waittimes.activities;
 
+
+
 import com.j256.ormlite.android.apptools.OrmLiteBaseActivity;
 import com.waittimes.storage.DatabaseHelper;
 import com.waittimes.storage.WaitLane;
@@ -25,7 +27,6 @@ public class TrackedWaitLanes extends OrmLiteBaseActivity<DatabaseHelper> {
 		
 		//setup gui for this activity, then
 		this.setContentView(R.layout.tracked_wait_times);
-		
 		//set up adapter for list, need to call on create
 		//before the helper method to get database helper
 		//can be used

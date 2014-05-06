@@ -3,25 +3,35 @@ package com.waittimes.storage;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Stack;
 import java.util.concurrent.ExecutionException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.util.Log;
 
 import com.j256.ormlite.android.apptools.OrmLiteBaseActivity;
@@ -30,24 +40,43 @@ import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 import com.waittimes.R;
 import com.waittimes.utilities.BitmapGetterTask;
+import com.waittimes.utilities.HTTPEntityGetter;
+import com.waittimes.utilities.InputStreamTask;
+import com.waittimes.utilities.JSONGetterTask;
 
 @DatabaseTable(tableName = "WaitLane")
 public class WaitLane {
-
-	public static final String[] ORIGIN_PICTURE_DIR = {"origin","country", "flag"};
-	public static final String[] DESTIN_PICTURE_DIR = {"destination", "country", "flag"};
-	public static final String[] MODEL_DIR = {"files", "model"};
-	public static final String[] BOUNDARY_DIR = {"files", "boundary"};
-	public static final String[] EXITS_DIR = {"files", "exits"};
-	public static final String[] ENTRIES_DIR = {"files", "entries"};
-
-	private static final String DIRECTORY_NAME = "WaitLanes";
-	private static OrmLiteBaseActivity<DatabaseHelper> activity = null;
 	@DatabaseField(id = true)
 	private String id;
 	@DatabaseField
 	private Date lastUpdated;
+	
 	private JSONObject jsonRepresentation;
+	private static int  jsonLocator = 0,
+			localLocator = 1,
+			isGlobal = 2,
+			fileType = 3;
+	private static String GlobalFile = "global",
+							InstanceFile = "instance",
+							jsonType = "json",
+							bitmapType = "bitmap",
+							GeoModelsFolder = "models/", 
+							PicturesFolder = "pictures/";
+
+	private static Map<String, String[]> dirs = new HashMap<String, String[]>();
+	static {
+			dirs.put("info", new String[]{null, "info.json", InstanceFile, jsonType});
+			dirs.put("model", new String[]{"files,model", GeoModelsFolder+"model.json", InstanceFile, jsonType});
+			dirs.put("boundary", new String[]{"files,boundary", GeoModelsFolder+"boundary.json", InstanceFile, jsonType});
+			dirs.put("exists", new String[]{"files,exists", GeoModelsFolder+"exists.json", InstanceFile, jsonType});
+			dirs.put("entries", new String[]{"files,entries", GeoModelsFolder+"entries.json", InstanceFile, jsonType});
+			dirs.put("originPicture", new String[]{"origin,country,flag", PicturesFolder+"%.gif", GlobalFile, bitmapType});
+			dirs.put("destinationPicture", new String[]{"destination,country,flag", PicturesFolder+"%.gif", GlobalFile, bitmapType});
+	}
+
+	private static final String INSTANCE_DIR = "WaitLanes";
+	private static final String GLOBAL_DIR = "global";
+	private static OrmLiteBaseActivity<DatabaseHelper> activity = null;
 	
 	
 	WaitLane(){
@@ -66,8 +95,8 @@ public class WaitLane {
 		Log.i(WaitLane.class.getName(), "created new WaitLane object [(JSONObject)]");
 		this.jsonRepresentation = waitLaneJSON;
 		try {
-			this.id = this.jsonRepresentation.getString("id");
-			String lastUpdatedString = this.jsonRepresentation.getString("last_updated");
+			this.id = this.getJsonRepresentation().getString("id");
+			String lastUpdatedString = this.getJsonRepresentation().getString("last_updated");
 			lastUpdatedString = lastUpdatedString.replace("T", " ");
 			lastUpdatedString = lastUpdatedString.replace("Z", " ");
 			DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS ", Locale.US);
@@ -75,6 +104,8 @@ public class WaitLane {
 		} catch (IllegalArgumentException e) {
 			e.printStackTrace();
 		} catch (ParseException e) {
+			e.printStackTrace();
+		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
 	}
@@ -105,17 +136,34 @@ public class WaitLane {
 	public void setLastUpdated(Date lastUpdated) {
 		this.lastUpdated = lastUpdated;
 	}
+	
+	/**
+	 * @return the jsonRepresentation
+	 * @throws FileNotFoundException 
+	 */
+	public JSONObject getJsonRepresentation() throws FileNotFoundException {
+		if(this.jsonRepresentation == null){
+			this.jsonRepresentation = this.getJSONInfo();
+		}
+		return this.jsonRepresentation;
+	}
+
+	/**
+	 * @param jsonRepresentation the jsonRepresentation to set
+	 */
+	public void setJsonRepresentation(JSONObject jsonRepresentation) {
+		this.jsonRepresentation = jsonRepresentation;
+	}
 
 	/**
 	 * @return the name
 	 */
 	public String getName() {
 		String name = null;
-		if(this.jsonRepresentation == null){
-			this.jsonRepresentation = this.getJSONInfo();
-		}
 		try {
-			name = this.jsonRepresentation.getString("name");
+			name = this.getJsonRepresentation().getString("name");
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
@@ -144,7 +192,7 @@ public class WaitLane {
 		//create database entry
 		dao.createOrUpdate(this);
 		//create filesystem directories
-		File mainDirectory = WaitLane.activity.getDir(WaitLane.DIRECTORY_NAME, Context.MODE_PRIVATE);
+		File mainDirectory = WaitLane.activity.getDir(WaitLane.INSTANCE_DIR, Context.MODE_PRIVATE);
 		File waitLaneJSONFile = new File(mainDirectory.getAbsoluteFile()+
 										File.separator+
 										this.id+
@@ -216,27 +264,46 @@ public class WaitLane {
 		return removed;
 	}
 	/**
-	 * removeAllFiles
+	 * removes all files for this wait lane using depth first
+	 * search removal.
 	 * 
-	 * Removes all files and directories for the this waitlane
 	 */
 	private void removeAllFiles(){
 		if(WaitLane.activity == null){
 			return;
 		}
-		
-		File mainDirectory = WaitLane.activity.getDir(WaitLane.DIRECTORY_NAME, Context.MODE_PRIVATE);
-		File waitLaneJSONFile = new File(mainDirectory.getAbsoluteFile()+
+		File mainDirectory = WaitLane.activity.getDir(WaitLane.INSTANCE_DIR, Context.MODE_PRIVATE);
+		File waitLaneFolder = new File(mainDirectory.getAbsoluteFile()+
 				File.separator+
 				this.id+
 				File.separator);
-		if(waitLaneJSONFile.exists()){
-			for(File file: waitLaneJSONFile.listFiles()){
-				Log.i(WaitLane.class.getName(),"deleted ["+file.getAbsolutePath()+"]");
+		this.removeDirectory(waitLaneFolder);
+	}
+	/**
+	 * Depth first search removal of all files under a given
+	 * directory.
+	 * 
+	 * @param directory
+	 */
+	private void removeDirectory(File directory){
+		Stack<File> stack = new Stack<File>();
+		stack.push(directory);
+		while(!stack.isEmpty()){
+			File file = stack.peek();
+			if(file.isDirectory()){
+				File[] childrenFiles = file.listFiles();
+				if(childrenFiles.length == 0){
+					file.delete();
+					stack.pop();
+				}else{
+					for(File childFile : childrenFiles){
+						stack.push(childFile);
+					}
+				}
+			}else{
 				file.delete();
+				stack.pop();
 			}
-			Log.i(WaitLane.class.getName(),"deleted ["+waitLaneJSONFile.getAbsolutePath()+"]");
-			waitLaneJSONFile.delete();
 		}
 	}
 	/**
@@ -244,35 +311,90 @@ public class WaitLane {
 	 * in the application directory.
 	 * 
 	 * @return
+	 * @throws FileNotFoundException 
 	 */
-	public JSONObject getJSONInfo(){
-		JSONObject JSONInfo = null;
-		BufferedReader r = null;
+	public JSONObject getJSONInfo() throws FileNotFoundException{
+		return this.getJSONObjectResource("info");
+	}
+	/**
+	 * Gets bitmap for origin flag of this wait lane.
+	 * 
+	 * @return
+	 */
+	public Bitmap getBitmapOriginFlag(){
+		return this.getBitmapProperty("originPicture");
+	}
+	/**
+	 * Gets bitmap for destination flag of this wait lane.
+	 * 
+	 * @return
+	 */
+	public Bitmap getBitmapDestinationFlag(){
+		return this.getBitmapProperty("destinationPicture");
+	}
+	/**
+	 * Get bitmap for the given directory passed, these are defined as
+	 * static arrays for a wait lane.
+	 * 
+	 * @param string
+	 * @return
+	 */
+	private static Map<String, String> CountryCodesMap = new HashMap<String, String>();
+	static {
+			CountryCodesMap.put("originPicture", "origin,country,code");
+			CountryCodesMap.put("destinationPicture", "destination,country,code");
+	}
+	private Bitmap getBitmapProperty(String resourceName){
+		//this.getWaitLaneFileInputStream(resourceName, )
+		Bitmap map = null;
+		String code = this.getStringPrefixJSONObjects(WaitLane.CountryCodesMap.get(resourceName));
 		try {
-			//get info.json to a JSONObject
-			r = new BufferedReader(new FileReader(this.getWaitLaneFile("info.json")));
-			StringBuilder total = new StringBuilder();
-			String line;
-			while ((line = r.readLine()) != null) {
-			    total.append(line);
-			}
-			JSONInfo = new JSONObject(total.toString());
+			InputStream stream = this.getWaitLaneFileInputStream(resourceName, new String[][]{new String[]{code}, null});
+			map = BitmapFactory.decodeStream(stream);
+			stream.close();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return map;
+	}
+	/**
+	 * Gets the JSONObject for the specified resource name.
+	 * 
+	 * @param resourceName
+	 * @return
+	 * @throws FileNotFoundException
+	 */
+	private JSONObject getJSONObjectResource(String resourceName) throws FileNotFoundException{
+		InputStream stream = this.getWaitLaneFileInputStream(resourceName, null);
+		JSONObject object = null;
+		try {
+			object = new JSONObject(IOUtils.toString(stream));
+			stream.close();
 		} catch (JSONException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
-		} finally {
-			try {
-				if(r != null){
-					r.close();
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
 		}
-		return JSONInfo;
+		return object;
+	}
+	/**
+	 * get an input stream for the given resource
+	 * 
+	 * @param resourceName
+	 * @param holders
+	 * @return
+	 * @throws FileNotFoundException
+	 */
+	private InputStream getWaitLaneFileInputStream(String resourceName, String[][] holders) throws FileNotFoundException{
+		File file = null;
+		if(holders == null){
+			file = this.getWaitLaneFile(resourceName, null, null);
+		}else{
+			file = this.getWaitLaneFile(resourceName, holders[0], holders[1]);
+		}
+		return new FileInputStream(file);
 	}
 	/**
 	 * Returns a file relative to this wait lane within
@@ -280,67 +402,171 @@ public class WaitLane {
 	 * 
 	 * @return
 	 */
-	private File getWaitLaneFile(String filePath){
-		File waitTimesDirectory = WaitLane.activity.getDir(WaitLane.DIRECTORY_NAME, Context.MODE_PRIVATE);
-		File waitLaneFile = new File(waitTimesDirectory.getAbsoluteFile()+
-				File.separator+
-				this.id+
-				File.separator+
-				filePath);
+	private File getWaitLaneFile(String resourceName, String[] localPlaceHolders, String[] remotePlaceHolders){
+		String localLocator = this.getLocalLocator(resourceName, localPlaceHolders);
+		File localFile = new File(localLocator);
+		//TODO: add caching capability here by checking
+		//time at which remote wait lane was created 
+		if(!localFile.exists()){
+			String remoteLocator = this.getRemoteLocator(resourceName, remotePlaceHolders);
+			this.getRemoteResource(remoteLocator, localLocator);
+		}
+		File waitLaneFile = new File(localLocator);
 		return waitLaneFile;
 	}
 	/**
-	 * Get bitmap for the given directory passed, these are defined as
-	 * static arrays for a wait lane.
+	 * Get remote resource and store in a file.
 	 * 
-	 * @param directory
+	 * @param remoteLocator
+	 * @param localLocator
+	 * @param fileType
 	 * @return
 	 */
-	public Bitmap getBitmapProperty(String[] directory){
-		String uriDirectory = this.getStringPrefixJSONObjects(directory);
-		URI uri = null;
-		try {
-			uri = new URI("http://"+WaitLane.activity.getString(R.string.domain)+uriDirectory);
+	private void getRemoteResource(String remoteLocator, String localLocator) {
+		File localFile = new File(localLocator);
+		if (localFile.getParentFile().exists() || localFile.getParentFile().mkdirs()){
+	        try
+	        {
+	            localFile.createNewFile();
+	        }
+	        catch(IOException ioe)
+	        {
+	            ioe.printStackTrace();
+	            return;
+	        }
+		} else {
+			Log.d(WaitLane.class.getCanonicalName(), "created file or non-existent parent directories");
+		}
+		try{
+			//TODO: make this only return an input stream object
+			/*if(fileType.equals("json")){
+				//get json object and write it to local file
+				JSONGetterTask task = new JSONGetterTask();
+				task.execute(new URI(remoteLocator));
+				JSONObject object = task.get();
+				writer.write(object.toString().getBytes());
+				resource = object;
+			}else if(fileType.equals("bitmap")){
+				//get bitmap of image and write it to local file
+				BitmapGetterTask task = new BitmapGetterTask();
+				task.execute(new URI(remoteLocator));
+				Bitmap bitmap = task.get();
+				bitmap.compress(Bitmap.CompressFormat.JPEG, 100, writer);
+				resource = bitmap;
+			}*/
+			InputStreamTask inputTask = new InputStreamTask();
+			inputTask.execute(new URI(remoteLocator));
+			InputStream stream = inputTask.get();
+			FileUtils.copyInputStreamToFile(stream, localFile);
+			
+		}catch(ExecutionException e){
+			e.printStackTrace();
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
-		}
-		//return a null if not uri is found
-		if(uri == null){
-			return null;
-		}
-		return this.getBitmapAtURI(uri);
-	}
-	/**
-	 * Gets the bitmap at the provided URI if it is possible
-	 * else it returns null.
-	 * 
-	 * @param uri
-	 * @return
-	 */
-	private Bitmap getBitmapAtURI(URI uri){
-		BitmapGetterTask bitmapGetter = new BitmapGetterTask();
-		bitmapGetter.execute(uri);
-		Bitmap bitmap = null;
-		try {
-			bitmap = bitmapGetter.get();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
-		} catch (ExecutionException e) {
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return bitmap;
+		Log.d(WaitLane.class.getCanonicalName(), "downloaded resource -> ("+fileType+")"+remoteLocator);
+		Log.d(WaitLane.class.getCanonicalName(), "to "+localLocator);
 	}
+
 	/**
-	 * Gets a string given that all objects before the string in JSON
-	 * representation of this wait lane are JSON obejcts.
+	 * Get the remote uri string representation of the given
+	 * resource.
 	 * 
-	 * @param directory
+	 * @param resourceName
 	 * @return
 	 */
-	private String getStringPrefixJSONObjects(String[] directory){
-		JSONObject jsonObject = this.jsonRepresentation;
+	private String getRemoteLocator(String resourceName, String[] placeHolders) {
+		StringBuilder stringBld = new StringBuilder();
+		stringBld.append("http://"+WaitLane.activity.getString(R.string.domain));
+		//append remote path
+		if(WaitLane.dirs.get(resourceName)[WaitLane.jsonLocator] != null){
+				 stringBld.append(this.getStringPrefixJSONObjects(WaitLane.dirs.get(resourceName)[WaitLane.jsonLocator]));
+		}else{
+				 stringBld.append("file/"+this.id+"/info.json");
+		}
+		return this.replaceWithPlaceHolders(stringBld.toString(), placeHolders);
+	}
+	/**
+	 * Get a string representing the file absolute location where
+	 * the resource should be located. This file path is formed based
+	 * on the static configuration written on the top of the class.
+	 * If the final path contains % marks they will be replaced with
+	 * the given place holders in order.
+	 * 
+	 * @param resourceName
+	 * @param placeHolders
+	 * @return
+	 */
+	private String getLocalLocator(String resourceName, String[] placeHolders) {
+		StringBuilder stringBld = new StringBuilder();	
+		Map<String, String[]> dir = WaitLane.dirs;
+		dir.get("hello");
+		if(WaitLane.dirs.get(resourceName)[WaitLane.isGlobal].equals("global")){
+			File waitTimesDirectory = WaitLane.activity.getDir(WaitLane.GLOBAL_DIR, Context.MODE_PRIVATE);
+			stringBld.append(waitTimesDirectory.getAbsoluteFile())
+					 .append(File.separator)
+					 .append(WaitLane.dirs.get(resourceName)[WaitLane.localLocator]);
+		}else{
+			File waitTimesDirectory = WaitLane.activity.getDir(WaitLane.INSTANCE_DIR, Context.MODE_PRIVATE);
+			stringBld.append(waitTimesDirectory.getAbsoluteFile())
+					 .append(File.separator)
+					 .append(this.id)
+					 .append(File.separator)
+					 .append(WaitLane.dirs.get(resourceName)[WaitLane.localLocator]);
+		}
+		String locator = this.replaceWithPlaceHolders(stringBld.toString(), placeHolders);
+		return locator;
+	}
+	/**
+	 * places each of the places holders in order in the
+	 * location within the string were there is a "%".
+	 * eg. 
+	 * 
+	 * "xasdf%assfd", {"FF"} => "xasdfFFassfd"
+	 * 
+	 * @param str
+	 * @param placeHolders
+	 * @return
+	 */
+	private String replaceWithPlaceHolders(String str, String[] placeHolders){
+		StringBuilder stringBld = new StringBuilder();
+		int placeHolderIndex = 0;
+		do{
+			int index = str.indexOf("%");
+			if(index > -1){
+				stringBld.append(str.substring(0, index))
+					     .append(placeHolders[placeHolderIndex]);
+				str = str.substring(index+1);
+				placeHolderIndex++;
+			}else{
+				stringBld.append(str);
+				break;
+			}
+		}while(true);
+		return stringBld.toString();
+	}
+
+	/**
+	 * Gets a string given that all objects before the string in JSON
+	 * representation of this wait lane are JSON objects.
+	 * 
+	 * @param locator
+	 * @return
+	 */
+	private String getStringPrefixJSONObjects(String locator){
+		String[] locatorArray = this.locatorSplitter(locator);
 		String string = null;
-		for(String dir: directory){
+		JSONObject jsonObject = null;
+		try {
+			jsonObject = this.getJsonRepresentation();
+		} catch (FileNotFoundException e1) {
+			e1.printStackTrace();
+		}
+		for(String dir: locatorArray){
 			//get object if it is an object
 			try {
 				jsonObject = jsonObject.getJSONObject(dir);
@@ -357,6 +583,10 @@ public class WaitLane {
 			break;
 		}
 		return string;
+	}
+	private String[] locatorSplitter(String locator){
+		String[] locatorArray = locator.split(",");
+		return locatorArray;
 	}
 	/**
 	 * STATIC METHODS

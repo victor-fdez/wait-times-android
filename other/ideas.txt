@@ -43,4 +43,14 @@ idea 1
 	6.) if route has a score below certain threshould then choose this as the
 		route that was actually taken.
 	7.) calculate factores! :) (later)
+	
+	
+Wait Lanes File System
+
+
+	WaitLanes/x/info.json
+	WaitLanes/x/files/model.json
+	WaitLanes/x/files/boundary.json
+	WaitLanes/x/files/other.json
+	WaitLanes/x/data/history/DDMMYYYY-HHMMSS.MMMM.json
 				

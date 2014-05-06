@@ -1,8 +1,6 @@
 package com.waittimes.activities;
 
 
-import java.util.List;
-
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient.ConnectionCallbacks;
 import com.google.android.gms.common.GooglePlayServicesClient.OnConnectionFailedListener;
@@ -218,6 +216,7 @@ public class DetailWaitLanes
 			this.webView.loadUrl(this.url);
 		}
 	}
+	
 	private class RunnableChangeText implements Runnable{
 		private TextView view;
 		private String message;
